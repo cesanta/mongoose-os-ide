@@ -9,7 +9,7 @@
   "engines": {
     "vscode": "^1.28.0"
   },
-  "icon": "https://github.com/cesanta/mongoose-os-ide/raw/master/resources/logo.png",
+  "icon": "resources/logo.png",
   "activationEvents": [
     "*"
   ],
