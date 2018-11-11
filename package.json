@@ -2,14 +2,14 @@
   "name": "mongoose-os-ide",
   "displayName": "Mongoose OS IDE",
   "description": "Development environment for Mongoose OS",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "homepage": "https://mongoose-os.com",
   "publisher": "mongoose-os",
   "repository": "https://github.com/cesanta/mongoose-os-ide",
   "engines": {
     "vscode": "^1.28.0"
   },
-  "icon": "resources/logo.png",
+  "icon": "https://github.com/cesanta/mongoose-os-ide/raw/master/resources/logo.png",
   "activationEvents": [
     "*"
   ],
@@ -31,24 +31,11 @@
         }
       }
     },
-    "viewsContainers": {
-      "activitybar": [
+    "views": {
+      "explorer": [
         {
           "id": "mos",
-          "title": "Mongoose OS",
-          "icon": "resources/logo.svg"
-        }
-      ]
-    },
-    "views": {
-      "mos": [
-        {
-          "id": "tool",
-          "name": "mos tool"
-        },
-        {
-          "id": "device",
-          "name": "Device"
+          "name": "Mongoose OS"
         }
       ]
     },

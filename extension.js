@@ -40,78 +40,70 @@ const killMosCommandAndWait = () => new Promise((resolve, reject) => {
 });
 
 const runMosCommand = (args, out, nomarks) => new Promise((resolve, reject) => {
-  if (!mosPort) {
-    reject('Port is not selected');
-  } else {
-    killMosCommandAndWait().then(() => {
-      let fullArgs = args.concat(['--port', mosPort]);
-      if (args[0] === 'build' && boards[mosBoard]) {
-        fullArgs = fullArgs.concat(boards[mosBoard].split(/\s+/));
+  return killMosCommandAndWait().then(() => {
+    let fullArgs = args
+    if (mosPort) fullArgs = fullArgs.concat(['--port', mosPort]);
+    if (args[0] === 'build' && boards[mosBoard]) {
+      fullArgs = fullArgs.concat(boards[mosBoard].split(/\s+/));
+    }
+    const uri = vscode.workspace.workspaceFolders[0].uri;
+    const cwd = vscode.Uri.parse(uri).fsPath;
+    // console.log('Running', fullArgs.join(' '));
+    mosProcess = childProcess.spawn('mos', fullArgs, {cwd});
+    if (!nomarks) out.append(`\n--[command: mos ${fullArgs.join(' ')}]\n`);
+    mosProcess.stdout.on('data', b => out.append(b.toString()));
+    mosProcess.stderr.on('data', b => out.append(b.toString()));
+    mosProcess.on('error', (err) => reject(err));
+    mosProcess.on('exit', (code) => {
+      if (!nomarks) out.append('--[command complete]');
+      if (code) {
+        reject(`Command "mos ${args[0]} ..." failed`);
+      } else {
+        resolve();
       }
-      const uri = vscode.workspace.workspaceFolders[0].uri;
-      const cwd = vscode.Uri.parse(uri).fsPath;
-      mosProcess = childProcess.spawn('mos', fullArgs, {cwd});
-      if (!nomarks) out.append(`\n--[command: mos ${fullArgs.join(' ')}]\n`);
-      mosProcess.stdout.on('data', b => out.append(b.toString()));
-      mosProcess.stderr.on('data', b => out.append(b.toString()));
-      mosProcess.on('error', (err) => reject(err));
-      mosProcess.on('exit', (code) => {
-        if (!nomarks) out.append('--[command complete]');
-        if (code) {
-          reject(`Command "mos ${args[0]} ..." failed`);
-        } else {
-          resolve();
-        }
-        mosProcess = undefined;
-      });
-    }, err => console.log('KILL ERRR', err));
-  }
+      mosProcess = undefined;
+    });
+  });
 });
 
-const runMosConsole = () => {
+// When idle, run `mos console` command if the port is chosen
+setInterval(() => {
   if (!mosPort || mosProcess || numPortWaiters) return;
   runMosCommand(['console'], uartOut).catch(() => {});
-};
-setInterval(runMosConsole, 1000);
+}, 1000);
 
 const runMosCommandGetOutput = args => {
   const obj = {out: [], append: x => obj.out.push(x)};
   return runMosCommand(args, obj, true).then(() => obj.out.join(''));
 };
 
-const toolView = {
+const mosView = {
   _onDidChangeTreeData: new vscode.EventEmitter(),
-  getChildren: el =>
-      [{
+  getChildren: el => {
+    let rootItems = [
+      {
         label: `Port: ${mosPort || '<click to set>'}`,
         command: {command: 'mos.setPort'}
       },
-       {
-         label: `Board: ${mosBoard || '<click to set>'}`,
-         command: {command: 'mos.setBoard'}
-       },
-       {label: 'Run command...', command: {command: 'mos.runCommand'}}],
-  getTreeItem: item => item,
-};
-toolView.onDidChangeTreeData = toolView._onDidChangeTreeData.event;
-
-const deviceView = {
-  _onDidChangeTreeData: new vscode.EventEmitter(),
-  getChildren: el => {
-    if (!mosPort) return [];
-    if (!el)
-      return [
-        {
-          label: 'Device configuration',
-          command: {command: 'mos.openConfig'},
-          iconPath: vscode.ThemeIcon.File,
-        },
-        {
-          label: 'Device files',
-          collapsibleState: vscode.TreeItemCollapsibleState.Expanded,
-          iconPath: vscode.ThemeIcon.Folder,
-        }
-      ];
+      {
+        label: `Board: ${mosBoard || '<click to set>'}`,
+        command: {command: 'mos.setBoard'}
+      },
+      {label: 'Run command...', command: {command: 'mos.runCommand'}}
+    ];
+    if (mosPort) {
+      rootItems.push({
+        label: 'Device configuration',
+        command: {command: 'mos.openConfig'},
+        iconPath: vscode.ThemeIcon.File,
+      });
+      rootItems.push({
+        label: 'Device files',
+        collapsibleState: vscode.TreeItemCollapsibleState.Expanded,
+        iconPath: vscode.ThemeIcon.Folder,
+      });
+    }
+    if (!el) return rootItems;
     return deviceFiles.map(function(name) {
       return {
         label: name, iconPath: vscode.ThemeIcon.File,
@@ -121,13 +113,15 @@ const deviceView = {
   },
   getTreeItem: item => item,
 };
-deviceView.onDidChangeTreeData = deviceView._onDidChangeTreeData.event;
+mosView.onDidChangeTreeData = mosView._onDidChangeTreeData.event;
 
 const refreshFS = () => {
-  return runMosCommandGetOutput(['ls']).then(output => {
-    deviceFiles = output.replace(/^\s+|\s+$/g, '').split(/\s+/);
-    deviceView._onDidChangeTreeData.fire();
-  }, err => vscode.window.showErrorMessage(err));
+  return runMosCommandGetOutput(['ls'])
+      .then(output => {
+        deviceFiles = output.replace(/^\s+|\s+$/g, '').split(/\s+/);
+        mosView._onDidChangeTreeData.fire();
+      })
+      .catch(err => vscode.window.showErrorMessage(err));
 };
 
 module.exports = {
@@ -144,25 +138,22 @@ module.exports = {
     runMosCommandGetOutput(['ports']).catch(
         () => vscode.window.showErrorMessage(
             'Too old mos tool: "mos ports" failed. Run "mos update latest"'));
-    vscode.window.showInformationMessage(
-        'Press Shift+Ctrl+U / Shift+Cmd+U and select "Mongoose OS" output');
 
-    vscode.window.createTreeView('tool', {treeDataProvider: toolView});
-    vscode.window.createTreeView('device', {treeDataProvider: deviceView});
+    vscode.window.createTreeView('mos', {treeDataProvider: mosView});
 
     vscode.commands.registerCommand('mos.setPort', () => {
       childProcess.exec('mos ports', (error, stdout, stderr) => {
         const items = (stdout || '').replace(/\s+$/, '').split(/\s+/);
         vscode.window.showQuickPick(items).then(v => {
-          mosPort = v;
-          vscode.workspace.getConfiguration('mos').update('port', v)
-          toolView._onDidChangeTreeData.fire();
+          mosPort = v || '';
+          vscode.workspace.getConfiguration('mos').update('port', mosPort)
+          mosView._onDidChangeTreeData.fire();
           if (mosProcess) mosProcess.kill();
           if (v) {
             refreshFS();
           } else {
             deviceFiles = [];
-            deviceView._onDidChangeTreeData.fire();
+            mosView._onDidChangeTreeData.fire();
           }
         });
       });
@@ -172,7 +163,7 @@ module.exports = {
       vscode.window.showQuickPick(Object.keys(boards)).then(v => {
         mosBoard = v;
         vscode.workspace.getConfiguration('mos').update('board', v)
-        toolView._onDidChangeTreeData.fire();
+        mosView._onDidChangeTreeData.fire();
       });
     });
 
@@ -260,7 +251,5 @@ module.exports = {
       }
     });
   },
-  deactivate: function() {
-    console.log('MOS IDE deactivated.');
-  },
+  deactivate: function() { console.log('MOS IDE deactivated.'); },
 }

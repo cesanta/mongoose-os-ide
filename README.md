@@ -10,10 +10,18 @@ for more details.
 
 ## Features
 
-- Editing/saving files on a device
-- Editing/saving device config as a file
-- Running any device command
-- Device serial log console
+- Run any mos command: `Ctrl+.`
+- Open device serial log console: toggle "Output" panel
+  (`Shift+Ctrl+U` / `Shift+Cmd+U`)
+  and select "Mongoose OS" output in a dropdown
+- To build firmware, open app directory in VSCode, select board and run `build`.
+  Note: `mos` tool executes in the first workspace's directory, so only that
+  directory can be built, and it must be a Mongoose firmware directory with
+  the `mos.yml` file
+- To flash firmware, select port and run `flash`
+- To configure wifi, run `wifi NETWORK PASSWORD`
+- Edit files on a device: select port and click on a file to edit and save
+- Edit device config as a file: select port and click on "Device configuration"
 
 ## Requirements
 
