@@ -1,0 +1,101 @@
+{
+  "name": "mongoose-os-ide",
+  "displayName": "Mongoose OS IDE",
+  "description": "Development environment for Mongoose OS",
+  "version": "0.4.6",
+  "homepage": "https://mongoose-os.com",
+  "publisher": "mongoose-os",
+  "repository": "https://github.com/cesanta/mongoose-os-ide",
+  "engines": {
+    "vscode": "^1.28.0"
+  },
+  "icon": "resources/logo.png",
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Mongoose OS IDE configuration",
+      "properties": {
+        "mos.port": {
+          "type": "string",
+          "default": "",
+          "description": "--port value"
+        },
+        "mos.board": {
+          "type": "string",
+          "default": "",
+          "description": "Selected board"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mos",
+          "title": "Mongoose OS",
+          "icon": "resources/logo.svg"
+        }
+      ]
+    },
+    "views": {
+      "mos": [
+        {
+          "id": "tool",
+          "name": "mos tool"
+        },
+        {
+          "id": "device",
+          "name": "Device"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "mos.setPort",
+        "title": "Set port"
+      },
+      {
+        "command": "mos.setBoard",
+        "title": "Set board"
+      },
+      {
+        "command": "mos.openFile",
+        "title": "Open device file"
+      },
+      {
+        "command": "mos.reboot",
+        "title": "Reboot device"
+      },
+      {
+        "command": "mos.openConfig",
+        "title": "Open device config"
+      },
+      {
+        "command": "mos.runCommand",
+        "title": "Run mos command"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "mos.setPort",
+        "key": "Ctrl+p"
+      },
+      {
+        "command": "mos.rebootDevice",
+        "key": "Ctrl+u"
+      },
+      {
+        "command": "mos.refreshDeviceFiles",
+        "key": "Ctrl+l"
+      },
+      {
+        "command": "mos.runCommand",
+        "key": "Ctrl+."
+      }
+    ]
+  },
+  "dependencies": {}
+}
