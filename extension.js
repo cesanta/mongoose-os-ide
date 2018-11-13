@@ -41,11 +41,13 @@ const killMosCommandAndWait = () => new Promise((resolve, reject) => {
 
 const runMosCommand = (args, out, nomarks) => new Promise((resolve, reject) => {
   return killMosCommandAndWait().then(() => {
-    let fullArgs = args
+    let fullArgs = args;
     if (mosPort) fullArgs = fullArgs.concat(['--port', mosPort]);
     if (args[0] === 'build' && boards[mosBoard]) {
       fullArgs = fullArgs.concat(boards[mosBoard].split(/\s+/));
     }
+    let extra = vscode.workspace.getConfiguration('mos').get('flags');
+    if (extra) fullArgs = fullArgs.concat(extra.split(/\s+/));
     const uri = vscode.workspace.workspaceFolders[0].uri;
     const cwd = vscode.Uri.parse(uri).fsPath;
     // console.log('Running', fullArgs.join(' '));

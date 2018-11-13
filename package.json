@@ -2,7 +2,7 @@
   "name": "mongoose-os-ide",
   "displayName": "Mongoose OS IDE",
   "description": "Development environment for Mongoose OS",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "homepage": "https://mongoose-os.com",
   "publisher": "mongoose-os",
   "repository": "https://github.com/cesanta/mongoose-os-ide",
@@ -23,6 +23,11 @@
           "type": "string",
           "default": "",
           "description": "--port value"
+        },
+        "mos.flags": {
+          "type": "string",
+          "default": "",
+          "description": "Extra mos command line flags to pass"
         },
         "mos.board": {
           "type": "string",
