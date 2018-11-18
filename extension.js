@@ -129,8 +129,7 @@ const refreshFS = () => {
 module.exports = {
   activate: function(context) {
     console.log('MOS IDE activated.');
-
-    const dir = path.join(context.storagePath);
+    const dir = context.storagePath;
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
     mosPort = vscode.workspace.getConfiguration('mos').get('port');
@@ -252,6 +251,31 @@ module.exports = {
             .catch(err => vscode.window.showErrorMessage(err));
       }
     });
+
+    // Autocompletion support
+    const symbols = {c: [], js: []};
+    try {
+      const sp = path.join(context.extensionPath, 'resources', 'symbols.json');
+      JSON.parse(fs.readFileSync(sp), 'utf-8').forEach(e => {
+        const m = e.file.match(/\((.+)\)/);
+        (e.lang === 'c' ? symbols.c : symbols.js).push({
+          label: e.name,
+          kind: vscode.CompletionItemKind.Function,
+          detail: m[1],
+          documentation: new vscode.MarkdownString(e.doc),
+        });
+      });
+      console.log(`  ${symbols.c.length} C, ${symbols.js.length} JS`);
+    } catch (err) {
+      vscode.window.showErrorMessage(err);
+    }
+    const ac = {
+      provideCompletionItems: doc =>
+          doc.fileName.match(/\.js$/) ? symbols.js : symbols.c,
+    };
+    vscode.languages.registerCompletionItemProvider('javascript', ac);
+    vscode.languages.registerCompletionItemProvider('c', ac);
+    vscode.languages.registerCompletionItemProvider('cpp', ac);
   },
   deactivate: function() { console.log('MOS IDE deactivated.'); },
 }

@@ -2,7 +2,7 @@
   "name": "mongoose-os-ide",
   "displayName": "Mongoose OS IDE",
   "description": "Development environment for Mongoose OS",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "homepage": "https://mongoose-os.com",
   "publisher": "mongoose-os",
   "repository": "https://github.com/cesanta/mongoose-os-ide",
