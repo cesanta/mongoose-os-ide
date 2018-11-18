@@ -253,6 +253,8 @@ module.exports = {
     });
 
     // Autocompletion support
+    // The symbols.json should be taken from here:
+    // https://raw.githubusercontent.com/cesanta/mongoose-os-docs/master/symbols.json
     const symbols = {c: [], js: []};
     try {
       const sp = path.join(context.extensionPath, 'resources', 'symbols.json');
