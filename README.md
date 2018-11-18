@@ -22,6 +22,9 @@ for more details.
 - To configure wifi, run `wifi NETWORK PASSWORD`
 - Edit files on a device: select port and click on a file to edit and save
 - Edit device config as a file: select port and click on "Device configuration"
+- C/C++ and JS API autocompletions:
+
+![](https://mongoose-os.com/docs/quickstart/images/ide_autocomplete.gif)
 
 ## Requirements
 
