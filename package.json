@@ -68,6 +68,30 @@
       {
         "command": "mos.runCommand",
         "title": "Run mos command"
+      },
+      {
+        "command": "mos.buildLocally",
+        "title": "Build locally"
+      },
+      {
+        "command": "mos.build",
+        "title": "Run mos build"
+      },
+      {
+        "command": "mos.flash",
+        "title": "Flash build"
+      },
+      {
+        "command": "mos.console",
+        "title": "Run mos console"
+      },
+      {
+        "command": "mos.sysInfo",
+        "title": "Get device info"
+      },
+      {
+        "command": "mos.rpcList",
+        "title": "List all RPCs"
       }
     ],
     "keybindings": [
