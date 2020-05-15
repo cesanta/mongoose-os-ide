@@ -58,7 +58,7 @@
         "title": "Open device file"
       },
       {
-        "command": "mos.reboot",
+        "command": "mos.rebootDevice",
         "title": "Reboot device"
       },
       {
