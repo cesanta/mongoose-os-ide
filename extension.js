@@ -59,7 +59,7 @@ const runMosCommand = (args, out, nomarks) => new Promise((resolve, reject) => {
     mosProcess.on('exit', (code) => {
       if (!nomarks) out.append('--[command complete]');
       if (code) {
-        reject(`Command "mos ${args[0]} ..." failed`);
+        reject(`MGOS: Command "mos ${args[0]} ..." failed`);
       } else {
         resolve();
       }
@@ -258,43 +258,50 @@ module.exports = {
         input = (input || '').replace(/^mos\s*/i, '').replace(/\s+$/, '');
         if (!input) return;
         runMosCommand(input.split(/\s+/), cmdOut)
+          .then(() => cmdOut.show(true))
           .catch(err => vscode.window.showErrorMessage(err));
       });
     });
 
     vscode.commands.registerCommand('mos.rebootDevice', () => {
       return runMosCommand(['call', 'Sys.Reboot'], cmdOut)
-        .then(() => vscode.window.showInformationMessage('Device rebooted'))
+        .then(() => vscode.window.showInformationMessage('MGOS: Device rebooted'))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.sysInfo', () => {
       return runMosCommand(['call', 'Sys.GetInfo'], cmdOut)
+        .then(() => cmdOut.show(true))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.console', () => {
       return runMosCommand(['console'], cmdOut)
+        .then(() => cmdOut.show(true))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.rpcList', () => {
       return runMosCommand(['call', 'RPC.List'], cmdOut)
+        .then(() => cmdOut.show(true))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.buildLocally', () => {
       return runMosCommand(['build', "--local", "--verbose"], cmdOut)
+        .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.build', () => {
       return runMosCommand(['build'], cmdOut)
+        .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.flash', () => {
       return runMosCommand(['flash'], cmdOut)
+        .then(() => vscode.window.showInformationMessage('MGOS: Flash succeeded!'))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
