@@ -290,13 +290,19 @@ module.exports = {
     vscode.commands.registerCommand('mos.buildLocally', () => {
       return runMosCommand(['build', "--local", "--verbose"], cmdOut)
         .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
-        .catch(err => vscode.window.showErrorMessage(err));
+        .catch(err => {
+          cmdOut.show(true)
+          vscode.window.showErrorMessage(err)
+        });
     });
 
     vscode.commands.registerCommand('mos.build', () => {
       return runMosCommand(['build'], cmdOut)
         .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
-        .catch(err => vscode.window.showErrorMessage(err));
+        .catch(err => {
+          cmdOut.show(true)
+          vscode.window.showErrorMessage(err)
+        });
     });
 
     vscode.commands.registerCommand('mos.flash', () => {
