@@ -10,6 +10,7 @@ let deviceFiles = [];        // Device file list
 let numPortWaiters = 0;      // Number of commands waiting for port
 const uartOut = vscode.window.createOutputChannel('Mongoose OS');
 const cmdOut = uartOut;
+const mgosStatusBarIcon = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
 
 const boards = {
   'STM32 B-L475E-IOT01A': '--platform stm32 --build-var BOARD=B-L475E-IOT01A',
@@ -80,6 +81,12 @@ const runMosCommandGetOutput = args => {
 };
 
 const mosView = {
+  setupStatusBarIcon: () => {
+    mgosStatusBarIcon.command = "mos.showPanel"
+    mgosStatusBarIcon.text = " $(circuit-board) "
+    mgosStatusBarIcon.tooltip = "Mongoose OS Output Panel"
+    mgosStatusBarIcon.show()
+  },
   _onDidChangeTreeData: new vscode.EventEmitter(),
   getChildren: el => {
     let rootItems = [
@@ -198,6 +205,9 @@ const refreshFS = () => {
 module.exports = {
   activate: function (context) {
     console.log('MOS IDE activated.');
+
+    mosView.setupStatusBarIcon();
+
     const dir = context.storagePath;
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
@@ -312,6 +322,8 @@ module.exports = {
     });
 
     vscode.commands.registerCommand('mos.refreshDeviceFiles', refreshFS);
+
+    vscode.commands.registerCommand('mos.showPanel', () => { cmdOut.show(true) });
 
     const mkdiff = (x, y) => {
       try {
