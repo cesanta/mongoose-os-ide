@@ -47,27 +47,51 @@
     "commands": [
       {
         "command": "mos.setPort",
-        "title": "Set port"
+        "title": "MGOS: Set port"
       },
       {
         "command": "mos.setBoard",
-        "title": "Set board"
+        "title": "MGOS: Set board"
       },
       {
         "command": "mos.openFile",
-        "title": "Open device file"
+        "title": "MGOS: Open device file"
       },
       {
-        "command": "mos.reboot",
-        "title": "Reboot device"
+        "command": "mos.rebootDevice",
+        "title": "MGOS: Reboot device"
       },
       {
         "command": "mos.openConfig",
-        "title": "Open device config"
+        "title": "MGOS: Open device config"
       },
       {
         "command": "mos.runCommand",
-        "title": "Run mos command"
+        "title": "MGOS: Run mos command"
+      },
+      {
+        "command": "mos.buildLocally",
+        "title": "MGOS: Build locally"
+      },
+      {
+        "command": "mos.build",
+        "title": "MGOS: Run mos build"
+      },
+      {
+        "command": "mos.flash",
+        "title": "MGOS: Flash build"
+      },
+      {
+        "command": "mos.console",
+        "title": "MGOS: Run mos console"
+      },
+      {
+        "command": "mos.sysInfo",
+        "title": "MGOS: Get device info"
+      },
+      {
+        "command": "mos.rpcList",
+        "title": "MGOS: List all RPCs"
       }
     ],
     "keybindings": [

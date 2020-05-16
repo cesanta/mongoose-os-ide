@@ -51,7 +51,7 @@ const runMosCommand = (args, out, nomarks) => new Promise((resolve, reject) => {
     const uri = vscode.workspace.workspaceFolders[0].uri;
     const cwd = vscode.Uri.parse(uri).fsPath;
     // console.log('Running', fullArgs.join(' '));
-    mosProcess = childProcess.spawn('mos', fullArgs, {cwd});
+    mosProcess = childProcess.spawn('mos', fullArgs, { cwd });
     if (!nomarks) out.append(`\n--[command: mos ${fullArgs.join(' ')}]\n`);
     mosProcess.stdout.on('data', b => out.append(b.toString()));
     mosProcess.stderr.on('data', b => out.append(b.toString()));
@@ -71,11 +71,11 @@ const runMosCommand = (args, out, nomarks) => new Promise((resolve, reject) => {
 // When idle, run `mos console` command if the port is chosen
 setInterval(() => {
   if (!mosPort || mosProcess || numPortWaiters) return;
-  runMosCommand(['console'], uartOut).catch(() => {});
+  runMosCommand(['console'], uartOut).catch(() => { });
 }, 1000);
 
 const runMosCommandGetOutput = args => {
-  const obj = {out: [], append: x => obj.out.push(x)};
+  const obj = { out: [], append: x => obj.out.push(x) };
   return runMosCommand(args, obj, true).then(() => obj.out.join(''));
 };
 
@@ -84,19 +84,88 @@ const mosView = {
   getChildren: el => {
     let rootItems = [
       {
-        label: `Port: ${mosPort || '<click to set>'}`,
-        command: {command: 'mos.setPort'}
+        label: 'Build locally',
+        command: { command: 'mos.buildLocally' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'build-local.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'build-local.svg')
+        }
       },
       {
-        label: `Board: ${mosBoard || '<click to set>'}`,
-        command: {command: 'mos.setBoard'}
+        label: 'Build',
+        command: { command: 'mos.build' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'build-online.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'build-online.svg')
+        }
       },
-      {label: 'Run command...', command: {command: 'mos.runCommand'}}
+      {
+        label: 'Flash',
+        command: { command: 'mos.flash' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'flash.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'flash.svg')
+        }
+      },
+      {
+        label: 'Console',
+        command: { command: 'mos.console' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'console.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'console.svg')
+        }
+      },
+
+      {
+        label: 'Device info',
+        command: { command: 'mos.sysInfo' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'device-info.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'device-info.svg')
+        }
+      },
+
+      {
+        label: 'RPC List',
+        command: { command: 'mos.rpcList' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'rpc-list.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'rpc-list.svg')
+        }
+      },
+
+      {
+        label: 'Run command...',
+        command: { command: 'mos.runCommand' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'run-command.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'run-command.svg')
+        }
+      },
+
+      {
+        label: 'Reboot device',
+        command: { command: 'mos.rebootDevice' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'reboot.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'reboot.svg')
+        }
+      },
+
+      {
+        label: `Port: ${mosPort || '<click to set>'}`,
+        command: { command: 'mos.setPort' }
+      },
+
+      {
+        label: `Board: ${mosBoard || '<click to set>'}`,
+        command: { command: 'mos.setBoard' }
+      },
     ];
     if (mosPort) {
       rootItems.push({
         label: 'Device configuration',
-        command: {command: 'mos.openConfig'},
+        command: { command: 'mos.openConfig' },
         iconPath: vscode.ThemeIcon.File,
       });
       rootItems.push({
@@ -106,10 +175,10 @@ const mosView = {
       });
     }
     if (!el) return rootItems;
-    return deviceFiles.map(function(name) {
+    return deviceFiles.map(function (name) {
       return {
         label: name, iconPath: vscode.ThemeIcon.File,
-            command: {command: 'mos.openFile', arguments: [name]},
+        command: { command: 'mos.openFile', arguments: [name] },
       }
     });
   },
@@ -119,15 +188,15 @@ mosView.onDidChangeTreeData = mosView._onDidChangeTreeData.event;
 
 const refreshFS = () => {
   return runMosCommandGetOutput(['ls'])
-      .then(output => {
-        deviceFiles = output.replace(/^\s+|\s+$/g, '').split(/\s+/);
-        mosView._onDidChangeTreeData.fire();
-      })
-      .catch(err => vscode.window.showErrorMessage(err));
+    .then(output => {
+      deviceFiles = output.replace(/^\s+|\s+$/g, '').split(/\s+/);
+      mosView._onDidChangeTreeData.fire();
+    })
+    .catch(err => vscode.window.showErrorMessage(err));
 };
 
 module.exports = {
-  activate: function(context) {
+  activate: function (context) {
     console.log('MOS IDE activated.');
     const dir = context.storagePath;
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
@@ -137,10 +206,10 @@ module.exports = {
     if (mosPort) refreshFS();
 
     runMosCommandGetOutput(['ports']).catch(
-        () => vscode.window.showErrorMessage(
-            'Too old mos tool: "mos ports" failed. Run "mos update latest"'));
+      () => vscode.window.showErrorMessage(
+        'Too old mos tool: "mos ports" failed. Run "mos update latest"'));
 
-    vscode.window.createTreeView('mos', {treeDataProvider: mosView});
+    vscode.window.createTreeView('mos', { treeDataProvider: mosView });
 
     vscode.commands.registerCommand('mos.setPort', () => {
       childProcess.exec('mos ports', (error, stdout, stderr) => {
@@ -189,14 +258,44 @@ module.exports = {
         input = (input || '').replace(/^mos\s*/i, '').replace(/\s+$/, '');
         if (!input) return;
         runMosCommand(input.split(/\s+/), cmdOut)
-            .catch(err => vscode.window.showErrorMessage(err));
+          .catch(err => vscode.window.showErrorMessage(err));
       });
     });
 
     vscode.commands.registerCommand('mos.rebootDevice', () => {
       return runMosCommand(['call', 'Sys.Reboot'], cmdOut)
-          .then(() => vscode.window.showInformationMessage('Device rebooted'))
-          .catch(err => vscode.window.showErrorMessage(err));
+        .then(() => vscode.window.showInformationMessage('Device rebooted'))
+        .catch(err => vscode.window.showErrorMessage(err));
+    });
+
+    vscode.commands.registerCommand('mos.sysInfo', () => {
+      return runMosCommand(['call', 'Sys.GetInfo'], cmdOut)
+        .catch(err => vscode.window.showErrorMessage(err));
+    });
+
+    vscode.commands.registerCommand('mos.console', () => {
+      return runMosCommand(['console'], cmdOut)
+        .catch(err => vscode.window.showErrorMessage(err));
+    });
+
+    vscode.commands.registerCommand('mos.rpcList', () => {
+      return runMosCommand(['call', 'RPC.List'], cmdOut)
+        .catch(err => vscode.window.showErrorMessage(err));
+    });
+
+    vscode.commands.registerCommand('mos.buildLocally', () => {
+      return runMosCommand(['build', "--local", "--verbose"], cmdOut)
+        .catch(err => vscode.window.showErrorMessage(err));
+    });
+
+    vscode.commands.registerCommand('mos.build', () => {
+      return runMosCommand(['build'], cmdOut)
+        .catch(err => vscode.window.showErrorMessage(err));
+    });
+
+    vscode.commands.registerCommand('mos.flash', () => {
+      return runMosCommand(['flash'], cmdOut)
+        .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.refreshDeviceFiles', refreshFS);
@@ -240,22 +339,22 @@ module.exports = {
           const setArgs = ['call', 'Config.Set', `{"config":${diff}}`];
           const saveArgs = ['call', 'Config.Save', '{"reboot": true}'];
           return runMosCommand(setArgs, cmdOut)
-              .then(() => runMosCommand(saveArgs, cmdOut))
-              .then(() => vscode.window.showInformationMessage('Config saved'))
-              .catch(err => vscode.window.showErrorMessage(err));
+            .then(() => runMosCommand(saveArgs, cmdOut))
+            .then(() => vscode.window.showInformationMessage('Config saved'))
+            .catch(err => vscode.window.showErrorMessage(err));
         });
       } else if (local.startsWith(dir)) {
         const remote = path.basename(document.fileName);
         return runMosCommand(['put', local, remote], cmdOut)
-            .then(() => vscode.window.showInformationMessage('File saved'))
-            .catch(err => vscode.window.showErrorMessage(err));
+          .then(() => vscode.window.showInformationMessage('File saved'))
+          .catch(err => vscode.window.showErrorMessage(err));
       }
     });
 
     // Autocompletion support
     // The symbols.json should be taken from here:
     // https://raw.githubusercontent.com/cesanta/mongoose-os-docs/master/symbols.json
-    const symbols = {c: [], js: []};
+    const symbols = { c: [], js: [] };
     try {
       const sp = path.join(context.extensionPath, 'resources', 'symbols.json');
       JSON.parse(fs.readFileSync(sp), 'utf-8').forEach(e => {
@@ -273,11 +372,11 @@ module.exports = {
     }
     const ac = {
       provideCompletionItems: doc =>
-          doc.fileName.match(/\.js$/) ? symbols.js : symbols.c,
+        doc.fileName.match(/\.js$/) ? symbols.js : symbols.c,
     };
     vscode.languages.registerCompletionItemProvider('javascript', ac);
     vscode.languages.registerCompletionItemProvider('c', ac);
     vscode.languages.registerCompletionItemProvider('cpp', ac);
   },
-  deactivate: function() { console.log('MOS IDE deactivated.'); },
+  deactivate: function () { console.log('MOS IDE deactivated.'); },
 }
