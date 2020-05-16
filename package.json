@@ -92,6 +92,10 @@
       {
         "command": "mos.rpcList",
         "title": "MGOS: List all RPCs"
+      },
+      {
+        "command": "mos.showPanel",
+        "title": "MGOS: Show output panel"
       }
     ],
     "keybindings": [

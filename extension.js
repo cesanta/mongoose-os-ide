@@ -10,6 +10,7 @@ let deviceFiles = [];        // Device file list
 let numPortWaiters = 0;      // Number of commands waiting for port
 const uartOut = vscode.window.createOutputChannel('Mongoose OS');
 const cmdOut = uartOut;
+const mgosStatusBarIcon = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
 
 const boards = {
   'STM32 B-L475E-IOT01A': '--platform stm32 --build-var BOARD=B-L475E-IOT01A',
@@ -59,7 +60,7 @@ const runMosCommand = (args, out, nomarks) => new Promise((resolve, reject) => {
     mosProcess.on('exit', (code) => {
       if (!nomarks) out.append('--[command complete]');
       if (code) {
-        reject(`Command "mos ${args[0]} ..." failed`);
+        reject(`MGOS: Command "mos ${args[0]} ..." failed`);
       } else {
         resolve();
       }
@@ -80,6 +81,12 @@ const runMosCommandGetOutput = args => {
 };
 
 const mosView = {
+  setupStatusBarIcon: () => {
+    mgosStatusBarIcon.command = "mos.showPanel"
+    mgosStatusBarIcon.text = " $(circuit-board) "
+    mgosStatusBarIcon.tooltip = "Mongoose OS Output Panel"
+    mgosStatusBarIcon.show()
+  },
   _onDidChangeTreeData: new vscode.EventEmitter(),
   getChildren: el => {
     let rootItems = [
@@ -198,6 +205,9 @@ const refreshFS = () => {
 module.exports = {
   activate: function (context) {
     console.log('MOS IDE activated.');
+
+    mosView.setupStatusBarIcon();
+
     const dir = context.storagePath;
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
@@ -258,47 +268,62 @@ module.exports = {
         input = (input || '').replace(/^mos\s*/i, '').replace(/\s+$/, '');
         if (!input) return;
         runMosCommand(input.split(/\s+/), cmdOut)
+          .then(() => cmdOut.show(true))
           .catch(err => vscode.window.showErrorMessage(err));
       });
     });
 
     vscode.commands.registerCommand('mos.rebootDevice', () => {
       return runMosCommand(['call', 'Sys.Reboot'], cmdOut)
-        .then(() => vscode.window.showInformationMessage('Device rebooted'))
+        .then(() => vscode.window.showInformationMessage('MGOS: Device rebooted'))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.sysInfo', () => {
       return runMosCommand(['call', 'Sys.GetInfo'], cmdOut)
+        .then(() => cmdOut.show(true))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.console', () => {
       return runMosCommand(['console'], cmdOut)
+        .then(() => cmdOut.show(true))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.rpcList', () => {
       return runMosCommand(['call', 'RPC.List'], cmdOut)
+        .then(() => cmdOut.show(true))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.buildLocally', () => {
       return runMosCommand(['build', "--local", "--verbose"], cmdOut)
-        .catch(err => vscode.window.showErrorMessage(err));
+        .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
+        .catch(err => {
+          cmdOut.show(true)
+          vscode.window.showErrorMessage(err)
+        });
     });
 
     vscode.commands.registerCommand('mos.build', () => {
       return runMosCommand(['build'], cmdOut)
-        .catch(err => vscode.window.showErrorMessage(err));
+        .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
+        .catch(err => {
+          cmdOut.show(true)
+          vscode.window.showErrorMessage(err)
+        });
     });
 
     vscode.commands.registerCommand('mos.flash', () => {
       return runMosCommand(['flash'], cmdOut)
+        .then(() => vscode.window.showInformationMessage('MGOS: Flash succeeded!'))
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
     vscode.commands.registerCommand('mos.refreshDeviceFiles', refreshFS);
+
+    vscode.commands.registerCommand('mos.showPanel', () => { cmdOut.show(true) });
 
     const mkdiff = (x, y) => {
       try {
