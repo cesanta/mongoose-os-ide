@@ -5,7 +5,7 @@ This preview release of the extension provides support for
 
 ![](https://mongoose-os.com/docs/quickstart/images/ide.png)
 
-See [Mongoose OS IDE](https://mongoose-os.com/docs/quickstart/ide.md)
+See [Mongoose OS IDE](https://mongoose-os.com/docs/mongoose-os/quickstart/ide.md)
 for more details.
 
 ## Features
